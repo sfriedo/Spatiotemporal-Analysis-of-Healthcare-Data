@@ -24,9 +24,10 @@ CREATE LOCAL TEMPORARY TABLE #ten_most_common_diseases (
 
 INSERT INTO #ten_most_common_diseases (icd9, total)
 SELECT
-    "ICD9Code" AS icd9, count(*) AS total
+    "ICD9Code" AS icd9, count("PatientGuid") AS total
 FROM "TUKGRP1"."DIAGNOSIS"
 GROUP BY "ICD9Code"
+ORDER BY count("PatientGuid") DESC
 LIMIT 10;
 
 SELECT concat(concat(#age_groups.s, '-'), #age_groups.e) AS AgeGroup, "DiagnosisDescription", "ICD9Code", count("PatientGuid")
