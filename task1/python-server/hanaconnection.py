@@ -9,7 +9,7 @@ try:
     with open('config.txt', 'rb') as cfg:
         cfg = json.load(cfg)
         USER = cfg['user']
-        PS = cfg['password']
+        PW = cfg['password']
         print('Config loaded')
 except Exception:
     print('Could not find config.txt, Database connection won\'t work!')
