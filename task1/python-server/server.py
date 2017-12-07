@@ -46,6 +46,14 @@ def get_patients_rel():
     return run_patients_rel_query(state, gender)
 
 
+@app.route('/smoker')
+def get_smoker():
+    state = request.args.get('state', '')
+    year = request.args.get('year', '')
+    gender = request.args.get('gender', '')
+    return run_smoker_query(state, gender, year)
+
+
 def run_visits_query(state='', gender='', year=''):
     query = '''SELECT count(TRANSCRIPT."TranscriptGuid"), "State"
         FROM TRANSCRIPT JOIN PATIENT
@@ -123,6 +131,36 @@ def run_visits_rel_query(state='', gender='', year=''):
         query += ''' AND "VisitYear"= {} '''.format(year)
     query += 'GROUP BY "State", POPULATION'
     return execute_query(query)
+
+
+def run_smoker_query(state='', gender='', year=''):
+    query = '''SELECT count(PATIENT."PatientGuid"), "State", "Description"
+        FROM  PATIENT
+        JOIN "TUKGRP1"."PATIENTSMOKINGSTATUS"
+        ON PATIENTSMOKINGSTATUS."PatientGuid" = PATIENT."PatientGuid"
+        JOIN "TUKGRP1"."SMOKINGSTATUS"
+        ON SMOKINGSTATUS."SmokingStatusGuid" =
+        PATIENTSMOKINGSTATUS."SmokingStatusGuid" '''
+    if state:
+        query += ''' AND "State"=UPPER(\'{}\') '''.format(state)
+    if gender:
+        query += ''' AND "Gender"=UPPER(\'{}\') '''.format(gender)
+    if year:
+        query += ''' AND "EffectiveYear"= {} '''.format(year)
+    query += 'GROUP BY "State", "Description"'
+    print(query)
+    result = []
+    with HanaConnection() as conn:
+        try:
+            conn.execute(query)
+            result = [{'state': t[1], 'value': float(t[0]),
+                       'description': t[2]}
+                      for t in conn.fetchall()]
+            print(result)
+            result = json.dumps(result)
+        except Exception as e:
+            print(e)
+    return result
 
 
 def execute_query(query):
