@@ -31,6 +31,21 @@ def get_visits():
     return run_visits_query(state, gender, year)
 
 
+@app.route('/visitsrel')
+def get_visits_rel():
+    state = request.args.get('state', '')
+    year = request.args.get('year', '')
+    gender = request.args.get('gender', '')
+    return run_visits_rel_query(state, gender, year)
+
+
+@app.route('/patientsrel')
+def get_patients_rel():
+    state = request.args.get('state', '')
+    gender = request.args.get('gender', '')
+    return run_patients_rel_query(state, gender)
+
+
 def run_visits_query(state='', gender='', year=''):
     query = '''SELECT count(TRANSCRIPT."TranscriptGuid"), "State"
         FROM TRANSCRIPT JOIN PATIENT
@@ -78,6 +93,35 @@ def run_patients_query(state='', gender=''):
     elif gender:
         query += ''' WHERE "Gender"=UPPER(\'{}\') '''.format(gender)
     query += ''' GROUP BY "State" '''
+    return execute_query(query)
+
+
+def run_patients_rel_query(state='', gender=''):
+    query = '''select
+        count("PatientGuid")/POPULATION as patients,
+        "State"
+        from "TUKGRP1"."PATIENT"
+        JOIN STATE_POPULATION ON STATE_POPULATION.STATE = PATIENT."State"'''
+    if state:
+        query += ''' AND "State"=UPPER(\'{}\') '''.format(state)
+    if gender:
+        query += ''' AND "Gender"=UPPER(\'{}\') '''.format(gender)
+    query += ''' GROUP BY "State", POPULATION '''
+    return execute_query(query)
+
+
+def run_visits_rel_query(state='', gender='', year=''):
+    query = '''SELECT count(TRANSCRIPT."TranscriptGuid")/POPULATION, "State"
+        FROM TRANSCRIPT JOIN PATIENT
+        ON TRANSCRIPT."PatientGuid" = PATIENT."PatientGuid"
+        JOIN STATE_POPULATION ON STATE_POPULATION.STATE = PATIENT."State" '''
+    if state:
+        query += ''' AND "State"=UPPER(\'{}\') '''.format(state)
+    if gender:
+        query += ''' AND "Gender"=UPPER(\'{}\') '''.format(gender)
+    if year:
+        query += ''' AND "VisitYear"= {} '''.format(year)
+    query += 'GROUP BY "State", POPULATION'
     return execute_query(query)
 
 
