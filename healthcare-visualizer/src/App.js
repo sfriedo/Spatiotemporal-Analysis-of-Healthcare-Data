@@ -8,8 +8,8 @@ class App extends Component {
   render() {
     return (
       <div className="App">
-        {/*<MapView/>*/}
-        <SearchInterface/>
+        <SearchInterface styles={{position:'absolute'}}/>
+        <MapView/>
       </div>
     );
   }
