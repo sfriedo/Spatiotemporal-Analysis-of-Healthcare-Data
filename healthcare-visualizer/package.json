@@ -1,0 +1,25 @@
+{
+  "name": "healthcare-visualizer",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "axios": "^0.17.1",
+    "leaflet": "^1.2.0",
+    "node-sass-chokidar": "^0.0.3",
+    "react": "^16.2.0",
+    "react-dom": "^16.2.0",
+    "react-md": "^1.2.9",
+    "react-redux": "^5.0.6"
+  },
+  "devDependencies": {
+    "react-scripts": "1.0.17"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject",
+    "build-css": "node-sass-chokidar --include-path ./node_modules src/ -o src/",
+    "watch-css": "npm run build-css && npm run build-css -- --watch --recursive"
+  }
+}
