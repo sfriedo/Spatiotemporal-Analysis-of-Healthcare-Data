@@ -1,24 +1,27 @@
 import React from 'react'
-import './styles.css';
+import { connect } from 'react-redux'
 
 import L from 'leaflet/dist/leaflet';
-import 'leaflet/dist/leaflet.css'
-import statesData from './../data/us-states'
+import 'leaflet/dist/leaflet.css';
+import statesData from './../data/us-states';
+import statesCodes from './../data/stateCodes';
+
+import './styles.css';
 
 const position = [37.8, -96];
 const zoom = 4;
-export default class MapView extends React.Component {
+
+class MapView extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = { map: {}, data: {}, showedProp: 'density' }
+    this.state = { map: {}, data: {}, showedProp: 'density' };
     const self = this;
 
     const data = self.state.data;
     statesData.features.forEach(function (feature) {
       data[feature.properties.name] = { density: feature.properties.density, name: feature.properties.name };
     });
-    console.log(this.state.data);
   }
 
   componentDidMount() {
@@ -47,16 +50,14 @@ export default class MapView extends React.Component {
     const self = this;
 
     info.onAdd = function (map) {
-      console.log(map);
       this._div = L.DomUtil.create('div', 'info');
       this.update();
       return this._div;
     };
 
     info.update = function (props) {
-      console.log(props);
-      this._div.innerHTML = '<h4>US Population Density</h4>' + (props ?
-        '<b>' + props.name + '</b><br />' + props[self.state.showedProp] + ' people / mi<sup>2</sup>'
+      this._div.innerHTML = `<h4>${self.state.showedProp.toUpperCase()}</h4>` + (props ?
+        '<b>' + props.name + '</b><br />' + props[self.state.showedProp]
         : 'Hover over a state');
     };
 
@@ -159,10 +160,37 @@ export default class MapView extends React.Component {
                   '#FFEDA0';
   };
 
+  componentWillReceiveProps(nextProps) {
+    const data = this.state.data;
+
+    nextProps.states.forEach(function (obj) {
+      data[statesCodes(obj.state)][nextProps.search] = obj.value;
+    });
+
+    this.setState({ data, showedProp: nextProps.search });
+  }
+
   render() {
+    const geo = this.state.geojson;
+    if (geo) {
+      geo.eachLayer(function (l) {
+        geo.resetStyle(l);
+      });
+      this.state.info.update();
+    }
+
     return (
       <div id='map' style={{ height: "100vh" }}>
       </div>
     )
   }
 }
+
+const mapStateToProps = state => {
+  return {
+    states: state.api.states,
+    search: state.api.search
+  }
+};
+
+export default connect(mapStateToProps, {})(MapView);

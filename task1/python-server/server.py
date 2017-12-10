@@ -6,6 +6,12 @@ app = Flask(__name__)
 HEIGHT_CONSTRAINTS = (30, 120)
 WEIGHT_CONSTRAINTS = (5, 400)
 
+@app.after_request
+def after_request(response):
+  response.headers.add('Access-Control-Allow-Origin', '*')
+  response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+  response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+  return response
 
 @app.route('/patients')
 def get_patients():
@@ -176,3 +182,6 @@ def execute_query(query):
         except Exception as e:
             print(e)
     return result
+
+if __name__ == '__main__':
+    app.run()

@@ -1,16 +1,25 @@
 import axios from 'axios';
 import { REQUEST_STATE_DATA } from './actionTypes'
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'http://localhost:5000';
 
-export function requestStateData(stateCode, age, gender) {
+export function requestStateData(search, year, gender) {
+  console.log('foo');
   return function (dispatch, getState) {
-    const request = `${API_URL}/_state?${stateCode}&age=${age}&gender=${gender}`;
+    let request = `${API_URL}/${search}?`;
+    if(year && year !== 'NO FILTER'){
+      request += `year=${year}&`;
+    }
+    if(gender && gender !== 'NO FILTER'){
+      request += `gender=${gender}`;
+    }
+
+    console.log(search, year, gender, request);
     axios.get(request)
       .then(response => {
         dispatch({
           type: REQUEST_STATE_DATA,
-          payload: response.data
+          payload: { search: search, data: response.data }
         });
       })
       .catch((error) => {
