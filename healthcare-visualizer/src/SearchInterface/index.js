@@ -39,33 +39,36 @@ class SearchInterface extends React.Component {
       <div className="search">
         <Card className="md-block-centered">
           <CardTitle title='' subtitle="Enter search parameter"/>
-          <SelectField
-            id="select-field-1"
-            placeholder="Search Value"
-            className="md-cell"
-            menuItems={SEARCH_VALUE}
-            defaultValue={SEARCH_VALUE[0]}
-            onChange={this.handleChange.bind(this, 'search')}
-            position={SelectField.Positions.BELOW}
-          />
-          <SelectField
-            id="select-field-2"
-            placeholder="Year"
-            className="md-cell"
-            menuItems={YEARS}
-            defaultValue={YEARS[0]}
-            onChange={this.handleChange.bind(this, 'year')}
-            position={SelectField.Positions.BELOW}
-          />
-          <SelectField
-            id="select-field-2"
-            placeholder="Gender"
-            className="md-cell"
-            menuItems={GENDERS}
-            defaultValue={GENDERS[0]}
-            onChange={this.handleChange.bind(this, 'gender')}
-            position={SelectField.Positions.BELOW}
-          />
+          <div className="md-grid">
+            <SelectField
+              id="select-field-1"
+              helpText="Search Value"
+              className="md-cell"
+              simplifiedMenu={false}
+              menuItems={SEARCH_VALUE}
+              defaultValue={SEARCH_VALUE[0]}
+              onChange={this.handleChange.bind(this, 'search')}
+              position={SelectField.Positions.BELOW}
+            />
+            <SelectField
+              id="select-field-2"
+              helpText="Filter Year"
+              className="md-cell"
+              menuItems={YEARS}
+              defaultValue={YEARS[0]}
+              onChange={this.handleChange.bind(this, 'year')}
+              position={SelectField.Positions.BELOW}
+            />
+            <SelectField
+              id="select-field-2"
+              helpText="Filter Gender"
+              className="md-cell"
+              menuItems={GENDERS}
+              defaultValue={GENDERS[0]}
+              onChange={this.handleChange.bind(this, 'gender')}
+              position={SelectField.Positions.BELOW}
+            />
+          </div>
         </Card>
       </div>
     )
