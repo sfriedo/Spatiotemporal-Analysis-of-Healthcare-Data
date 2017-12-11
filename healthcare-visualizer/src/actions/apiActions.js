@@ -4,7 +4,6 @@ import { REQUEST_STATE_DATA } from './actionTypes'
 const API_URL = 'http://localhost:5000';
 
 export function requestStateData(search, year, gender) {
-  console.log('foo');
   return function (dispatch, getState) {
     let request = `${API_URL}/${search}?`;
     if(year && year !== 'NO FILTER'){
@@ -14,7 +13,6 @@ export function requestStateData(search, year, gender) {
       request += `gender=${gender}`;
     }
 
-    console.log(search, year, gender, request);
     axios.get(request)
       .then(response => {
         dispatch({

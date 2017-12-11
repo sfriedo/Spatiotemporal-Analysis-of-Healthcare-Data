@@ -8,7 +8,7 @@ import { connect } from "react-redux";
 import { requestStateData } from '../actions/apiActions';
 
 const SEARCH_VALUE = ['patients', 'bmi', 'visits', 'visitsrel', 'patientsrel', 'smoker'];
-const YEARS = ['NO FILTER', '1990', '1991', '1992', '1993', '1994', '1995', '1996', '1997', '1998', '1999', '2000'];
+let YEARS = ['NO FILTER'];
 const GENDERS = ['NO FILTER', 'M', 'F'];
 
 class SearchInterface extends React.Component {
@@ -16,6 +16,10 @@ class SearchInterface extends React.Component {
     super(props);
 
     this.state = { search: SEARCH_VALUE[0], year: YEARS[0], gender: GENDERS[0] };
+
+    for(let i = 2009; i <= 2013; i++){
+      YEARS.push(i.toString());
+    }
   }
 
   handleChange = (key, value) => {
