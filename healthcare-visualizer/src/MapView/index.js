@@ -59,6 +59,20 @@ class MapView extends React.Component {
       let val;
       if (props && props[self.state.showedProp] !== -1) val = props[self.state.showedProp];
       else val = 'Value unknown';
+
+      if(props && self.props.search === 'smoker' && val !== 'Value unknown'){
+        val = `total count: ${val}`;
+        val = '';
+        const keys = Object.keys(props);
+        for(const i in keys){
+          if(keys.hasOwnProperty(i)){
+            if(keys[i] !== 'name' && keys[i] !== 'value'){
+              val += `${keys[i]}: ${props[keys[i]]}<br>`;
+            }
+          }
+        }
+      }
+
       this._div.innerHTML = `<h4>${self.state.showedProp.toUpperCase()}</h4>` + (props ?
         '<b>' + props.name + '</b><br />' + (val)
         : 'Hover over a state');
@@ -172,7 +186,7 @@ class MapView extends React.Component {
       return v0 - t * v0 + t * v1
     }
 
-    if(d < 0) return this.getColorScale(-1);
+    if (d < 0) return this.getColorScale(-1);
     const t = (d - this.state.minValue) / (this.state.maxValue - this.state.minValue);
     return this.getColorScale(t);
 
@@ -192,16 +206,27 @@ class MapView extends React.Component {
     let maxValue = Number.MIN_VALUE;
 
     const keys = Object.keys(data);
-    for(const i in keys){
-      if(keys.hasOwnProperty(i)){
+    for (const i in keys) {
+      if (keys.hasOwnProperty(i)) {
+        data[keys[i]] = {};
         data[keys[i]][nextProps.search] = -1;
+        data[keys[i]].name = keys[i];
       }
     }
 
     nextProps.states.forEach(function (obj) {
-      data[statesCodes(obj.state)][nextProps.search] = obj.value;
-      if(obj.value) minValue = Math.min(obj.value, minValue);
-      if(obj.value) maxValue = Math.max(obj.value, maxValue);
+      if (nextProps.search === 'smoker') {
+        const desc = obj.description;
+        data[statesCodes(obj.state)][desc] = obj.value;
+        if(!data[statesCodes(obj.state)][nextProps.search]) data[statesCodes(obj.state)][nextProps.search] = obj.value;
+        else data[statesCodes(obj.state)][nextProps.search] += obj.value;
+        if(obj.value) minValue = Math.min(obj.value, minValue);
+        if(obj.value) maxValue = Math.max(obj.value, maxValue);
+      } else {
+        data[statesCodes(obj.state)][nextProps.search] = obj.value;
+        if (obj.value) minValue = Math.min(obj.value, minValue);
+        if (obj.value) maxValue = Math.max(obj.value, maxValue);
+      }
     });
 
     this.setState({ data, showedProp: nextProps.search, maxValue, minValue });
