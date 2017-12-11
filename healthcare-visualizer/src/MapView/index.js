@@ -57,7 +57,7 @@ class MapView extends React.Component {
 
     info.update = function (props) {
       let val;
-      if (props && props[self.state.showedProp]) val = props[self.state.showedProp];
+      if (props && props[self.state.showedProp] !== -1) val = props[self.state.showedProp];
       else val = 'Value unknown';
       this._div.innerHTML = `<h4>${self.state.showedProp.toUpperCase()}</h4>` + (props ?
         '<b>' + props.name + '</b><br />' + (val)
@@ -153,7 +153,7 @@ class MapView extends React.Component {
   };
 
   getColorScale = (t) => {
-    if (t !== 0 && !t) return '#FFF';
+    if (t < 0) return '#FFF';
 
     return t > 0.8 ? '#800026' :
       t > 0.5 ? '#BD0026' :
@@ -172,6 +172,7 @@ class MapView extends React.Component {
       return v0 - t * v0 + t * v1
     }
 
+    if(d < 0) return this.getColorScale(-1);
     const t = (d - this.state.minValue) / (this.state.maxValue - this.state.minValue);
     return this.getColorScale(t);
 
@@ -190,10 +191,17 @@ class MapView extends React.Component {
     let minValue = Number.MAX_VALUE;
     let maxValue = Number.MIN_VALUE;
 
+    const keys = Object.keys(data);
+    for(const i in keys){
+      if(keys.hasOwnProperty(i)){
+        data[keys[i]][nextProps.search] = -1;
+      }
+    }
+
     nextProps.states.forEach(function (obj) {
       data[statesCodes(obj.state)][nextProps.search] = obj.value;
-      minValue = Math.min(obj.value, minValue);
-      maxValue = Math.max(obj.value, maxValue);
+      if(obj.value) minValue = Math.min(obj.value, minValue);
+      if(obj.value) maxValue = Math.max(obj.value, maxValue);
     });
 
     this.setState({ data, showedProp: nextProps.search, maxValue, minValue });
