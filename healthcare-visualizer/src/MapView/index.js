@@ -60,13 +60,13 @@ class MapView extends React.Component {
       if (props && props[self.state.showedProp] !== -1) val = props[self.state.showedProp];
       else val = 'Value unknown';
 
-      if(props && self.props.search === 'smoker' && val !== 'Value unknown'){
+      if (props && self.props.search === 'smoker' && val !== 'Value unknown') {
         val = `total count: ${val}`;
         val = '';
         const keys = Object.keys(props);
-        for(const i in keys){
-          if(keys.hasOwnProperty(i)){
-            if(keys[i] !== 'name' && keys[i] !== 'value'){
+        for (const i in keys) {
+          if (keys.hasOwnProperty(i)) {
+            if (keys[i] !== 'name' && keys[i] !== 'value') {
               val += `${keys[i]}: ${props[keys[i]]}<br>`;
             }
           }
@@ -218,10 +218,17 @@ class MapView extends React.Component {
       if (nextProps.search === 'smoker') {
         const desc = obj.description;
         data[statesCodes(obj.state)][desc] = obj.value;
-        if(!data[statesCodes(obj.state)][nextProps.search]) data[statesCodes(obj.state)][nextProps.search] = obj.value;
+
+        // not adding to the current smokers
+        if (desc.indexOf('0 cigarettes') !== -1 || desc.indexOf('Not a current') !== -1 || desc.indexOf('Current status unknown') !== -1) {
+          return;
+        }
+
+        if (data[statesCodes(obj.state)][nextProps.search] === -1) data[statesCodes(obj.state)][nextProps.search] = obj.value;
         else data[statesCodes(obj.state)][nextProps.search] += obj.value;
-        if(obj.value) minValue = Math.min(obj.value, minValue);
-        if(obj.value) maxValue = Math.max(obj.value, maxValue);
+        console.log(obj.value, obj.state);
+        if (obj.value) minValue = Math.min(obj.value, minValue);
+        if (obj.value) maxValue = Math.max(obj.value, maxValue);
       } else {
         data[statesCodes(obj.state)][nextProps.search] = obj.value;
         if (obj.value) minValue = Math.min(obj.value, minValue);
