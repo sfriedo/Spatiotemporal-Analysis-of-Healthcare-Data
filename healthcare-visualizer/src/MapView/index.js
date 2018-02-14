@@ -56,8 +56,25 @@ class MapView extends React.Component {
     };
 
     info.update = function (props) {
+      let val;
+      if (props && props[self.state.showedProp] !== -1) val = props[self.state.showedProp];
+      else val = 'Value unknown';
+
+      if (props && self.props.search === 'smoker' && val !== 'Value unknown') {
+        val = `total count: ${val}`;
+        val = '';
+        const keys = Object.keys(props);
+        for (const i in keys) {
+          if (keys.hasOwnProperty(i)) {
+            if (keys[i] !== 'name' && keys[i] !== 'value') {
+              val += `${keys[i]}: ${props[keys[i]]}<br>`;
+            }
+          }
+        }
+      }
+
       this._div.innerHTML = `<h4>${self.state.showedProp.toUpperCase()}</h4>` + (props ?
-        '<b>' + props.name + '</b><br />' + props[self.state.showedProp]
+        '<b>' + props.name + '</b><br />' + (val)
         : 'Hover over a state');
     };
 
@@ -127,16 +144,17 @@ class MapView extends React.Component {
 
     legend.onAdd = function (map) {
       var div = L.DomUtil.create('div', 'info legend'),
-        grades = [0, 10, 20, 50, 100, 200, 500, 1000],
+        // grades = [0, 10, 20, 50, 100, 200, 500, 1000],
+        grades = [0, 1, 2, 5, 10, 20, 50, 80],
         labels = [],
         from, to;
 
       for (var i = 0; i < grades.length; i++) {
-        from = grades[i];
-        to = grades[i + 1];
+        from = `${grades[i]}%`;
+        to = grades[i + 1] ? `${grades[i + 1]}%` : undefined;
 
         labels.push(
-          '<i style="background:' + self.getColor(from + 1) + '"></i> ' +
+          '<i style="background:' + self.getColorScale((grades[i] + 1) / 100) + '"></i> ' +
           from + (to ? '&ndash;' + to : '+'));
       }
 
@@ -148,26 +166,77 @@ class MapView extends React.Component {
     return legend;
   };
 
+  getColorScale = (t) => {
+    if (t < 0) return '#FFF';
+
+    return t > 0.8 ? '#800026' :
+      t > 0.5 ? '#BD0026' :
+        t > 0.2 ? '#E31A1C' :
+          t > 0.1 ? '#FC4E2A' :
+            t > 0.05 ? '#FD8D3C' :
+              t > 0.02 ? '#FEB24C' :
+                t > 0.01 ? '#FED976' :
+                  '#FFEDA0';
+  };
+
   // get color depending on population density value
   getColor = (d) => {
-    return d > 1000 ? '#800026' :
-      d > 500 ? '#BD0026' :
-        d > 200 ? '#E31A1C' :
-          d > 100 ? '#FC4E2A' :
-            d > 50 ? '#FD8D3C' :
-              d > 20 ? '#FEB24C' :
-                d > 10 ? '#FED976' :
-                  '#FFEDA0';
+    function lerp(v0, v1, t) {
+      // return (1 - t) * v0 + t * v1 = d
+      return v0 - t * v0 + t * v1
+    }
+
+    if (d < 0) return this.getColorScale(-1);
+    const t = (d - this.state.minValue) / (this.state.maxValue - this.state.minValue);
+    return this.getColorScale(t);
+
+    // return d > 1000 ? '#800026' :
+    //   d > 500 ? '#BD0026' :
+    //     d > 200 ? '#E31A1C' :
+    //       d > 100 ? '#FC4E2A' :
+    //         d > 50 ? '#FD8D3C' :
+    //           d > 20 ? '#FEB24C' :
+    //             d > 10 ? '#FED976' :
+    //               '#FFEDA0';
   };
 
   componentWillReceiveProps(nextProps) {
     const data = this.state.data;
+    let minValue = Number.MAX_VALUE;
+    let maxValue = Number.MIN_VALUE;
+
+    const keys = Object.keys(data);
+    for (const i in keys) {
+      if (keys.hasOwnProperty(i)) {
+        data[keys[i]] = {};
+        data[keys[i]][nextProps.search] = -1;
+        data[keys[i]].name = keys[i];
+      }
+    }
 
     nextProps.states.forEach(function (obj) {
-      data[statesCodes(obj.state)][nextProps.search] = obj.value;
+      if (nextProps.search === 'smoker') {
+        const desc = obj.description;
+        data[statesCodes(obj.state)][desc] = obj.value;
+
+        // not adding to the current smokers
+        if (desc.indexOf('0 cigarettes') !== -1 || desc.indexOf('Not a current') !== -1 || desc.indexOf('Current status unknown') !== -1) {
+          return;
+        }
+
+        if (data[statesCodes(obj.state)][nextProps.search] === -1) data[statesCodes(obj.state)][nextProps.search] = obj.value;
+        else data[statesCodes(obj.state)][nextProps.search] += obj.value;
+        console.log(obj.value, obj.state);
+        if (obj.value) minValue = Math.min(obj.value, minValue);
+        if (obj.value) maxValue = Math.max(obj.value, maxValue);
+      } else {
+        data[statesCodes(obj.state)][nextProps.search] = obj.value;
+        if (obj.value) minValue = Math.min(obj.value, minValue);
+        if (obj.value) maxValue = Math.max(obj.value, maxValue);
+      }
     });
 
-    this.setState({ data, showedProp: nextProps.search });
+    this.setState({ data, showedProp: nextProps.search, maxValue, minValue });
   }
 
   render() {
